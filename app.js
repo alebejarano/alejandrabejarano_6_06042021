@@ -7,7 +7,8 @@ const userRoutes = require('./routes/user');
 
 const app = express();
 
-mongoose.connect('mongodb+srv://lejitas:iHKhg53KH3VpGi10@cluster0.1qly4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+//connection to mongodb
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PW}@cluster0.1qly4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`)
   .then(() => {
     console.log('Successfully connected to MongoDB Atlas');
   })
@@ -33,5 +34,5 @@ app.use('/api/auth', userRoutes);
 
 module.exports = app;
 
-//MONGODB PW: iHKhg53KH3VpGi10
+
 //MONGODB CONNECTION: mongodb+srv://lejitas:<password>@cluster0.1qly4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
