@@ -1,16 +1,13 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const user = require('../models/user');
 
 exports.createSauce = (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  const decodedToken = jwt.verify(token, process.env.SECRET_TOKEN);
-  const userId = decodedToken.userId;
-
   const url = req.protocol + '://' + req.get('host');
   req.body.sauce = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
-    userId: userId,
+    userId: req.body.userId,
     name: req.body.sauce.name,
     manufacturer: req.body.sauce.manufacturer,
     description: req.body.sauce.description,
@@ -52,7 +49,7 @@ exports.modifySauce = (req, res, next) => {
     //checks the id of the sauce to modify, so later we can retrive the url of the image of the sauce before the file changed
     let updatedSauce = new Sauce({ _id: req.params.id });
     //We need to pass the id to the new sauce 
-    if (req.file) { 
+    if (req.file) {
       //to see if the modif comes with a new file
       const url = req.protocol + '://' + req.get('host');
       req.body.sauce = JSON.parse(req.body.sauce);
@@ -98,10 +95,14 @@ exports.modifySauce = (req, res, next) => {
 };
 
 exports.deleteSauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id }).then((sauce) => { //get acces to the sauce in the data base
-    const filename = sauce.imageUrl.split('/images/')[1]; // everithing before the /images is the protocol and the hostname and everithing after it will be the filename
-    fs.unlink(`images/${filename}`, () => { //to delete the file, first argument is the path of the file to delete, the second argument is the callback, called once file deletion is completed
-      Sauce.deleteOne({ _id: req.params.id }).then(() => { //after file is deleted the sauce post will be deleted
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    //get acces to the sauce in the data base
+    const filename = sauce.imageUrl.split('/images/')[1];
+    // everithing before the /images is the protocol and the hostname and everithing after it will be the filename
+    fs.unlink(`images/${filename}`, () => {
+      //to delete the file, first argument is the path of the file to delete, the second argument is the callback, called once file deletion is completed
+      Sauce.deleteOne({ _id: req.params.id }).then(() => {
+        //after file is deleted the sauce post will be deleted
         res.status(200).json({
           message: 'Deleted!'
         });
@@ -128,7 +129,22 @@ exports.getAllSauces = (req, res, next) => {
 
 exports.likeSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
-    if (sauce.usersLiked === 1)
+    // to see if our user is in the array
+    const userLikedIndex = sauce.usersLiked.indexOf(req.body.userId);
+    const userLiked = userLikedIndex !== -1;
+    const userDislikedIndex = sauce.usersDisliked.indexOf(req.body.userId);
+    const userDisliked = userDislikedIndex !== -1;
+    
+    if (req.body.like === 1 && !userLiked) {
+    //if the user has not liked the sauce yet and is going to
+      sauce.likes++;
+      sauce.usersLiked.push(req.body.userId);
+      if (userDisliked) {
+        //if the user had a dislike on the sauce
+        sauce.dislikes--;
+        sauce.usersDisliked.splice(userDislikedIndex, 1);
+      } 
+    }
 
       Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
         res.status(201).json({

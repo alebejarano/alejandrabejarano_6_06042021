@@ -28,11 +28,9 @@ app.use(express.json());
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+//set the endpoint and the router to be used
 app.use('/api/sauces', sauceRoutes);
 app.use('/api/auth', userRoutes);
 
 
 module.exports = app;
-
-
-//MONGODB CONNECTION: mongodb+srv://lejitas:<password>@cluster0.1qly4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
