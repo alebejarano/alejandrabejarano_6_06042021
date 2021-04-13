@@ -1,13 +1,12 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
-const user = require('../models/user');
+
 
 exports.createSauce = (req, res, next) => {
   const url = req.protocol + '://' + req.get('host');
   req.body.sauce = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
-    userId: req.body.userId,
+    userId: req.body.sauce.userId,
     name: req.body.sauce.name,
     manufacturer: req.body.sauce.manufacturer,
     description: req.body.sauce.description,
@@ -134,26 +133,35 @@ exports.likeSauce = (req, res, next) => {
     const userLiked = userLikedIndex !== -1;
     const userDislikedIndex = sauce.usersDisliked.indexOf(req.body.userId);
     const userDisliked = userDislikedIndex !== -1;
-    
+
     if (req.body.like === 1 && !userLiked) {
-    //if the user has not liked the sauce yet and is going to
+      //if the user has not liked the sauce yet and is going to
       sauce.likes++;
       sauce.usersLiked.push(req.body.userId);
       if (userDisliked) {
         //if the user had a dislike on the sauce
         sauce.dislikes--;
         sauce.usersDisliked.splice(userDislikedIndex, 1);
-      } 
-    }
-
-      Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
-        res.status(201).json({
-          message: 'Sauce liked!'
-        });
-      }).catch((error) => {
-        escape.status(400).json({
-          error: error
-        });
+      };
+    };
+    if (req.body.like === -1 && !userDisliked) {
+      //if the user has not dislike the sauce yet and is going to
+      sauce.dislikes++;
+      sauce.usersDisliked.push(req.body.userId);
+      if (userLiked) {
+        //if the user had a liked on the sauce
+        sauce.likes--;
+        sauce.usersLiked.splice(userLikedIndex, 1);
+      };
+    };
+    Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+      res.status(201).json({
+        message: `Mention j'aime modifie`
       });
+    }).catch((error) => {
+      res.status(400).json({
+        error: error
+      });
+    });
   });
 };
