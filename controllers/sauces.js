@@ -1,10 +1,11 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
 
-
+//Creates a sauce with an added file in our POST 
 exports.createSauce = (req, res, next) => {
   const url = req.protocol + '://' + req.get('host');
   req.body.sauce = JSON.parse(req.body.sauce);
+  //parse the stringify sauce into a jason object
   const sauce = new Sauce({
     userId: req.body.sauce.userId,
     name: req.body.sauce.name,
@@ -29,6 +30,8 @@ exports.createSauce = (req, res, next) => {
   });
 };
 
+/*GET: to retrieve one sauce from our database by
+passing to the findOne method the id of the sauce*/
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({
     _id: req.params.id
@@ -41,7 +44,19 @@ exports.getOneSauce = (req, res, next) => {
   });
 };
 
-/* To modify the sauce, checks if we modify a file or just the metadata
+//GET: To retreive all the sauces from the databese
+exports.getAllSauces = (req, res, next) => {
+  Sauce.find().then((sauces) => {
+    res.status(200).json(sauces);
+  }).catch((error) => {
+    res.status(400).json({
+      error: error
+    });
+  }
+  );
+};
+
+/* PUT: To modify the sauce, checks if we modify a file or just the metadata
 and deletes the last image, if the image was modified*/
 exports.modifySauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
@@ -72,7 +87,7 @@ exports.modifySauce = (req, res, next) => {
     Sauce.updateOne({ _id: req.params.id }, updatedSauce).then(() => {
       //Sauce is successfully updated
       if (req.file) {
-        // To delete the previous image, after modification has been done
+        // To delete the previous image, after modification has been successfully done
         const filename = sauce.imageUrl.split('/images/')[1];
         fs.unlink(`images/${filename}`, (error) => {
           if (error) console.log(error);
@@ -93,6 +108,7 @@ exports.modifySauce = (req, res, next) => {
   });
 };
 
+//To delete one sauce
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     //get acces to the sauce in the data base
@@ -114,18 +130,8 @@ exports.deleteSauce = (req, res, next) => {
   });
 };
 
-
-exports.getAllSauces = (req, res, next) => {
-  Sauce.find().then((sauces) => {
-    res.status(200).json(sauces);
-  }).catch((error) => {
-    res.status(400).json({
-      error: error
-    });
-  }
-  );
-};
-
+/*POST: To deal with the likes or dislikes of the created sauces
+if like is = 1 the sauce is liked, if is = -1 is disliked. The count of the users likes are in an array */
 exports.likeSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     // to see if our user is in the array
@@ -156,7 +162,7 @@ exports.likeSauce = (req, res, next) => {
     };
     Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
       res.status(201).json({
-        message: `Mention j'aime modifie`
+        message: `Mention j'aime modifié`
       });
     }).catch((error) => {
       res.status(400).json({
