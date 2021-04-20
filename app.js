@@ -28,7 +28,9 @@ app.use((req, res, next) => {
   next();
 });
 
+//support URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
+//To read the req.body and then parse that into a Json object
 app.use(express.json());
 
 app.use(mongoSanitize({ replaceWith: '_' }));

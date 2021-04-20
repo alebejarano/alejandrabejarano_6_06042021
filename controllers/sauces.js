@@ -7,6 +7,7 @@ exports.createSauce = (req, res, next) => {
   req.body.sauce = JSON.parse(req.body.sauce);
   //parse the stringify sauce into a jason object
   const sauce = new Sauce({
+    //we create a new Sauce model
     userId: req.body.sauce.userId,
     name: req.body.sauce.name,
     manufacturer: req.body.sauce.manufacturer,
@@ -67,6 +68,7 @@ exports.modifySauce = (req, res, next) => {
       //to see if the modif comes with a new file
       const url = req.protocol + '://' + req.get('host');
       req.body.sauce = JSON.parse(req.body.sauce);
+      //Our new sauce updated
       updatedSauce = {
         name: req.body.sauce.name,
         manufacturer: req.body.sauce.manufacturer,

@@ -7,6 +7,7 @@ const maskedEmail = MaskData.maskEmail2;
 
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10).then((hash) => {
+    //what we need to hash and the salt rounds
     const user = new User({
       email: maskedEmail(req.body.email),
       password: hash
@@ -34,7 +35,7 @@ exports.login = (req, res, next) => {
     }
     //the user exist, but we need to check the user's password
     bcrypt.compare(req.body.password, user.password).then((valid) => {
-      //comapre the password hashes
+      //comapre the password given by the user vs the one he have stored
       if (!valid) {
         //the password authentification failed
         return res.status(401).json({
@@ -44,6 +45,7 @@ exports.login = (req, res, next) => {
       const token = jwt.sign(
         //the data we want to encode
         { userId: user._id }, 
+        //key
         process.env.SECRET_TOKEN,
         { expiresIn: '24h'});
       res.status(200).json({
