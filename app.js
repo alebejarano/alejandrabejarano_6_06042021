@@ -7,6 +7,7 @@ const path = require('path');
 const sauceRoutes = require('./routes/sauces');
 const userRoutes = require('./routes/user');
 
+//create our express app
 const app = express();
 app.use(helmet());
 
@@ -38,5 +39,5 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/sauces', sauceRoutes);
 app.use('/api/auth', userRoutes);
 
-
+//exported so is accesible outside the file
 module.exports = app;

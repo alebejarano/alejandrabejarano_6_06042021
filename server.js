@@ -3,7 +3,7 @@ const http = require('http');
 require('dotenv').config();
 const app = require('./app');
 
-
+// normalizePort function returns a valid port, whether it is provided as a number or a string
 const normalizePort = val => {
   const port = parseInt(val, 10);
 
@@ -16,6 +16,7 @@ const normalizePort = val => {
   return false;
 };
 
+//our express app nedds to now which port where at
 const port = normalizePort(process.env.PORT || 3000);
 app.set('port', port);
 
@@ -39,6 +40,7 @@ const errorHandler = error => {
   }
 };
 
+//to make our node server run our express app
 const server = http.createServer(app);
 
 server.on('error', errorHandler);
