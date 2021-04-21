@@ -138,6 +138,7 @@ exports.likeSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     // to see if our user is in the array
     const userLikedIndex = sauce.usersLiked.indexOf(req.body.userId);
+    //if our user liked the sauce, it will be find in the array, therefore is !== -1
     const userLiked = userLikedIndex !== -1;
     const userDislikedIndex = sauce.usersDisliked.indexOf(req.body.userId);
     const userDisliked = userDislikedIndex !== -1;
@@ -151,8 +152,7 @@ exports.likeSauce = (req, res, next) => {
         sauce.dislikes--;
         sauce.usersDisliked.splice(userDislikedIndex, 1);
       };
-    };
-    if (req.body.like === -1 && !userDisliked) {
+    } else if (req.body.like === -1 && !userDisliked) {
       //if the user has not dislike the sauce yet and is going to
       sauce.dislikes++;
       sauce.usersDisliked.push(req.body.userId);
@@ -161,10 +161,21 @@ exports.likeSauce = (req, res, next) => {
         sauce.likes--;
         sauce.usersLiked.splice(userLikedIndex, 1);
       };
-    };
+    } else if (req.body.like === 0) {
+      //cancel our like or dislike
+      if (userDisliked) {
+        //if the user had a dislike on the sauce
+        sauce.dislikes--;
+        sauce.usersDisliked.splice(userDislikedIndex, 1);
+      } else if (userLiked) {
+        //if the user had a liked on the sauce
+        sauce.likes--;
+        sauce.usersLiked.splice(userLikedIndex, 1);
+      };
+    }
     Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
       res.status(201).json({
-        message: `Mention j'aime modifié`
+        message: `Mention j'aime modifiée`
       });
     }).catch((error) => {
       res.status(400).json({
