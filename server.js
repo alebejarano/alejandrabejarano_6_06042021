@@ -16,7 +16,7 @@ const normalizePort = val => {
   return false;
 };
 
-//our express app nedds to now which port where at
+//our express app needs to now which port where at
 const port = normalizePort(process.env.PORT || 3000);
 app.set('port', port);
 
@@ -29,12 +29,12 @@ const errorHandler = error => {
   const bind = typeof address === 'string' ? 'pipe' + address : 'port: ' + port;
   switch (error.code) {
     case 'EACCES':
-      //permission errors
+      //permission denied
       console.error(bind + ' requires elevated privilages.');
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      //port number is already in use
+      //Address already in use. An attempt to bind a server to a local address failed
       console.error(bind + ' is already in use.');
       process.exit(1);
       break;
