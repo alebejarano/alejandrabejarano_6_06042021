@@ -2,10 +2,33 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const MaskData = require('maskdata');
+const passwordValidator = require('password-validator');
+const emailValidator = require('email-validator');
+
+const schema = new passwordValidator();
+schema
+  .is().min(8)                                    // Minimum length 8
+  .has().uppercase()                              // Must have uppercase letters
+  .has().lowercase()                              // Must have lowercase letters
+  .has().digits(1)                                // Must have at least 1 digit
+  .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
+
 
 const maskedEmail = MaskData.maskEmail2;
 
 exports.signup = (req, res, next) => {
+  if (!emailValidator.validate(req.body.email)) {
+    //to validate the email address
+    res.status(400).json({
+      error: 'email not valid'
+    });
+  }
+  if (!schema.validate(req.body.password)) {
+    //to validate the schema password
+    res.status(400).json({
+      error: 'password must contain at least 1 digit, min 8 characters, uppercase and lowercase letters'
+    });
+  }
   bcrypt.hash(req.body.password, 10).then((hash) => {
     //what we need to hash and the salt rounds
     const user = new User({
@@ -44,10 +67,10 @@ exports.login = (req, res, next) => {
       }
       const token = jwt.sign(
         //the data we want to encode
-        { userId: user._id }, 
+        { userId: user._id },
         //key
         process.env.SECRET_TOKEN,
-        { expiresIn: '24h'});
+        { expiresIn: '24h' });
       res.status(200).json({
         //the authentification is valid, passing our user id and the token
         userId: user._id,
